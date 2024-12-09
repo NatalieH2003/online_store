@@ -27,13 +27,9 @@ CREATE TABLE customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-<<<<<<< HEAD
 
 -- Create the employees table
-CREATE TABLE IF NOT EXISTS employees (
-=======
 CREATE TABLE employees (
->>>>>>> 3e11ed5309f87f7f6f7b338b12fb6fc8fd62bd7b
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     username VARCHAR(255) NOT NULL UNIQUE,
