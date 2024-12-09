@@ -1,7 +1,7 @@
 <?php
 session_start();
-include 'db.php'; // Include database connection
-include 'common.php'; // Include common helper functions
+include '../db.php'; // Include database connection
+include '../common.php'; // Include common helper functions
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitizeInput($_POST['username']);
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Successful login
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['user_name'] = $user['username'];
-        header("Location: customer/main.php"); // Redirect to customer dashboard
+        header("Location: main.php"); // Redirect to customer dashboard
         exit;
     } else {
         // Invalid login credentials
