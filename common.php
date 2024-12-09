@@ -11,7 +11,7 @@ if(!function_exists("sanitizeInput")) {
 
     function checkLogin() {
         if (!isset($_SESSION['user_id'])) {
-            redirect('../login.php');
+            redirect('login.php');
         }
     }
 }
