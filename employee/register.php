@@ -4,29 +4,37 @@ include '../db.php'; // Include database connection
 include '../common.php'; // Include common helper functions
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = sanitizeInput($_POST['name']);
     $username = sanitizeInput($_POST['username']);
     $password = $_POST['password'];
+    $confirmPassword = $_POST['confirm_password'];
 
-    // Check if the employee exists
-    $stmt = $pdo->prepare("SELECT * FROM employees WHERE username = ?");
-    $stmt->execute([$username]);
-    $employee = $stmt->fetch();
-
-    if ($employee && password_verify($password, $employee['password'])) {
-        // Check if it's the first login
-        if ($employee['first_login'] == 1) {
-            $_SESSION['employee_id'] = $employee['id'];
-            header("Location: reset_password.php");
-            exit;
-        } else {
-            // Successful login
-            $_SESSION['employee_id'] = $employee['id'];
-            $_SESSION['employee_name'] = $employee['name'];
-            header("Location: main.php");
-            exit;
-        }
+    // Validate inputs
+    if (empty($name) || empty($username) || empty($password) || empty($confirmPassword)) {
+        echo "<p>All fields are required.</p>";
+    } elseif ($password !== $confirmPassword) {
+        echo "<p>Passwords do not match.</p>";
     } else {
-        echo "<p>Invalid username or password.</p>";
+        // Hash the password
+        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+
+        try {
+            // Check if username already exists
+            $stmt = $pdo->prepare("SELECT * FROM employees WHERE username = ?");
+            $stmt->execute([$username]);
+            if ($stmt->fetch()) {
+                echo "<p>Username already exists. Please choose another.</p>";
+            } else {
+                // Insert the new employee into the database
+                $stmt = $pdo->prepare("INSERT INTO employees (name, username, password, first_login) VALUES (?, ?, ?, 0)");
+                $stmt->execute([$name, $username, $hashedPassword]);
+
+                echo "<p>Registration successful! <a href='login.php'>Login here</a></p>";
+                exit;
+            }
+        } catch (Exception $e) {
+            echo "<p>Error: " . $e->getMessage() . "</p>";
+        }
     }
 }
 ?>
@@ -36,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Login</title>
+    <title>Employee Registration</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -74,11 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="container">
-        <h2>Employee Login</h2>
+        <h2>Employee Registration</h2>
         <form method="POST">
+            <input type="text" name="name" placeholder="Name" required>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <button type="submit">Register</button>
         </form>
     </div>
 </body>
