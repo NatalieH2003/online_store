@@ -66,7 +66,7 @@ $employeeName = htmlspecialchars($_SESSION['employee_name']); // Escape output f
             <li><a href="price.php">Change Product Price</a></li>
             <li><a href="stock.php">Stock</a></li>
             <li><a href="history.php">Price History</a></li>
-            <li><a href="../logout.php">Logout</a></li>
+            <li><a href="logout.php">Logout</a></li>
         </ul>
     </div>
 </body>
