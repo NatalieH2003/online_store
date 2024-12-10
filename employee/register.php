@@ -1,41 +1,18 @@
 <?php
-session_start();
 include '../db.php'; // Include database connection
 include '../common.php'; // Include common helper functions
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = sanitizeInput($_POST['name']);
     $username = sanitizeInput($_POST['username']);
-    $password = $_POST['password'];
-    $confirmPassword = $_POST['confirm_password'];
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    // Validate inputs
-    if (empty($name) || empty($username) || empty($password) || empty($confirmPassword)) {
-        echo "<p>All fields are required.</p>";
-    } elseif ($password !== $confirmPassword) {
-        echo "<p>Passwords do not match.</p>";
-    } else {
-        // Hash the password
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
+    // Insert the new employee into the database
+    $stmt = $pdo->prepare("INSERT INTO employees (name, username, password, first_login) VALUES (?, ?, ?, 1)");
+    $stmt->execute([$name, $username, $password]);
 
-        try {
-            // Check if username already exists
-            $stmt = $pdo->prepare("SELECT * FROM employees WHERE username = ?");
-            $stmt->execute([$username]);
-            if ($stmt->fetch()) {
-                echo "<p>Username already exists. Please choose another.</p>";
-            } else {
-                // Insert the new employee into the database
-                $stmt = $pdo->prepare("INSERT INTO employees (name, username, password, first_login) VALUES (?, ?, ?, 0)");
-                $stmt->execute([$name, $username, $hashedPassword]);
-
-                echo "<p>Registration successful! <a href='login.php'>Login here</a></p>";
-                exit;
-            }
-        } catch (Exception $e) {
-            echo "<p>Error: " . $e->getMessage() . "</p>";
-        }
-    }
+    echo "Registration successful! <a href='employee/login.php'>Login here</a>";
+    exit;
 }
 ?>
 
@@ -57,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px;
             background: white;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         h2 {
             text-align: center;
@@ -87,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="name" placeholder="Name" required>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
-            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Register</button>
         </form>
     </div>
