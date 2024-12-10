@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $stmt = $pdo->prepare("select price from products where id = ?");
     $stmt->execute([$productId]);
-    $old_price = $stmt->fetch();
+    $old_price = $stmt->fetch()['price'];
 
     // Update price
     $stmt = $pdo->prepare("UPDATE products SET price = ? WHERE id = ?");
