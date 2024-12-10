@@ -1,17 +1,35 @@
 <?php
-include '../db.php'; // Include database connection
-include '../common.php'; // Include common helper functions
+// Include the database connection and common helper functions
+include '../db.php';
+include '../common.php';
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Sanitize input to prevent SQL injection
     $name = sanitizeInput($_POST['name']);
     $username = sanitizeInput($_POST['username']);
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT); // Hash the password for security
 
-    // Insert the new employee into the database
-    $stmt = $pdo->prepare("INSERT INTO employees (name, username, password, first_login) VALUES (?, ?, ?, 1)");
-    $stmt->execute([$name, $username, $password]);
+    try {
+        // Insert the new employee into the database
+        $stmt = $pdo->prepare("
+            INSERT INTO employees (name, username, password, first_login) 
+            VALUES (?, ?, ?, 1)
+        ");
+        $stmt->execute([$name, $username, $password]);
 
-    echo "Registration successful! <a href='.../login.php'>Login here</a>";
+        // Registration success message
+        echo "Registration successful! <a href='login.php'>Login here</a>";
+    } catch (PDOException $e) {
+        // Check for duplicate username error
+        if ($e->getCode() === '23000') { // SQLSTATE 23000: Integrity constraint violation
+            echo "<p>Username already exists. Please choose a different one.</p>";
+        } else {
+            // General error message
+            echo "<p>An error occurred while registering. Please try again later.</p>";
+        }
+    }
+
     exit;
 }
 ?>

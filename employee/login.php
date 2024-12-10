@@ -1,9 +1,11 @@
 <?php
-session_start();
-include '../db.php'; // Include database connection
-include '../common.php'; // Include common helper functions
+session_start(); // Start the session
+
+include '../db.php';
+include '../common.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Sanitize user input
     $username = sanitizeInput($_POST['username']);
     $password = $_POST['password'];
 
@@ -13,15 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $employee = $stmt->fetch();
 
     if ($employee && password_verify($password, $employee['password'])) {
-        // Check if it's the first login
+        // Set session variables
+        $_SESSION['employee_id'] = $employee['id'];
+        $_SESSION['employee_name'] = $employee['name'];
+
+        // Redirect to reset password if it's the first login
         if ($employee['first_login'] == 1) {
-            $_SESSION['employee_id'] = $employee['id'];
             header("Location: reset_password.php");
             exit;
         } else {
-            // Successful login
-            $_SESSION['employee_id'] = $employee['id'];
-            $_SESSION['employee_name'] = $employee['name'];
+            // Redirect to the main page after successful login
             header("Location: main.php");
             exit;
         }
@@ -49,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px;
             background: white;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         h2 {
             text-align: center;
@@ -83,4 +86,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </body>
 </html>
-
