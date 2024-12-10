@@ -10,6 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
     $stmt->execute([$quantity, $productId]);
 
+    $stmt = $pdo->prepare("insert into stock_history (product_id, change_amount, change_date) values (?, ?, CURRENT_TIMESTAMP())");
+    $stmt->execute([$productId, $quantity]); 
+
+
     echo "Stock updated successfully.";
 }
 ?>
