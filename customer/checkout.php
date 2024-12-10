@@ -42,6 +42,9 @@ try {
             redirect('cart.php');
         }
 
+        $stmt = $pdo->prepare("insert into stock_history (product_id, change_amount, change_date) values (?, ?, CURRENT_TIMESTAMP())");
+        $stmt->execute([-1 * $productId, $quantity]); 
+
         // Deduct stock
         $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
         $stmt->execute([$quantity, $productId]);
