@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("INSERT INTO employees (name, username, password, first_login) VALUES (?, ?, ?, 1)");
     $stmt->execute([$name, $username, $password]);
 
-    echo "Registration successful! <a href='employee/login.php'>Login here</a>";
+    echo "Registration successful! <a href='.../login.php'>Login here</a>";
     exit;
 }
 ?>
