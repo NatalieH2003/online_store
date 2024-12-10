@@ -27,8 +27,6 @@ CREATE TABLE customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- Create the employees table
 CREATE TABLE employees (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -123,4 +121,5 @@ INSERT INTO products (name, category_id, price, stock) VALUES
 ('Smartphone', 1, 699.99, 15),
 ('Headphones', 1, 49.99, 50),
 ('Novel', 2, 14.99, 20),
-('T-shirt', 3, 19.99, 100);
+('T-shirt', 3, 19.99, 100),
+('Jeans', 3, 49.99, 50); -- Added second clothing item

@@ -11,47 +11,52 @@ try {
     $pdo->beginTransaction();
 
     // Get cart items
-    $stmt = $pdo->prepare("SELECT * FROM cart WHERE user_id = ?");
+    $stmt = $pdo->prepare("
+        SELECT cart.product_id, cart.quantity, products.stock
+        FROM cart
+        INNER JOIN products ON cart.product_id = products.id
+        WHERE cart.user_id = ?
+    ");
     $stmt->execute([$userId]);
-    $cartItems = $stmt->fetchAll();
+    $cartItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($cartItems)) {
         echo "Your cart is empty.";
         $pdo->rollBack();
         redirect('cart.php');
+        exit;
     }
 
-    // Create new order
+    // Create a new order
     $stmt = $pdo->prepare("INSERT INTO orders (user_id, order_date) VALUES (?, NOW())");
     $stmt->execute([$userId]);
     $orderId = $pdo->lastInsertId();
 
-    // Add items to order and check stock
     foreach ($cartItems as $item) {
         $productId = $item['product_id'];
         $quantity = $item['quantity'];
+        $stock = $item['stock'];
 
         // Check stock
-        $stmt = $pdo->prepare("SELECT stock FROM products WHERE id = ?");
-        $stmt->execute([$productId]);
-        $product = $stmt->fetch();
-
-        if ($product['stock'] < $quantity) {
-            echo "Insufficient stock for product ID: $productId.";
+        if ($stock < $quantity) {
+            echo "Error: Insufficient stock for product ID: $productId.";
             $pdo->rollBack();
             redirect('cart.php');
+            exit;
         }
-
-        $stmt = $pdo->prepare("insert into stock_history (product_id, change_amount, change_date) values (?, ?, CURRENT_TIMESTAMP())");
-        $stmt->execute([-1 * $productId, $quantity]); 
 
         // Deduct stock
         $stmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
         $stmt->execute([$quantity, $productId]);
 
-        // Add item to order
-        $stmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)");
-        $stmt->execute([$orderId, $productId, $quantity]);
+        // Insert into order_items
+        $stmt = $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) 
+                               SELECT ?, id, ?, price FROM products WHERE id = ?");
+        $stmt->execute([$orderId, $quantity, $productId]);
+
+        // Insert into stock_history
+        $stmt = $pdo->prepare("INSERT INTO stock_history (product_id, change_amount, change_date) VALUES (?, ?, NOW())");
+        $stmt->execute([$productId, -$quantity]);
     }
 
     // Clear cart
